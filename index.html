@@ -211,9 +211,30 @@
           displayReviews();
         }
 
-        function editReview() {}
+        function editReview(inputId, inputShopName, inputDishName, inputPrice, inputCuisine, inputDesc, inputRating) {
+          let idx = reviews.findIndex((review) => review.id == inputId);
+          if(idx == -1) {
+            return null
+          } else {
+            reviews[idx].shopName = inputShopName
+            reviews[idx].dishName = inputDishName
+            reviews[idx].price = inputPrice
+            reviews[idx].cuisine = inputCuisine
+            reviews[idx].desc = inputDesc
+            reviews[idx].rating = inputRating
+          }
+          displayReviews();
+        }
 
-        function deleteReview() {}
+        function deleteReview(inputId) {
+          let idx = reviews.findIndex((review) => review.id == inputId);
+          if(idx == -1) {
+            return null
+          } else {
+            reviews.splice(idx, 1)
+          }
+          displayReviews();
+        }
 
         let button = document.getElementById("submitButton")
         button.addEventListener("click", function() {
