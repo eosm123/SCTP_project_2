@@ -167,10 +167,49 @@
     ></script>
     <script>
       window.addEventListener("load", function() {
+        let globalId = 0
+        let reviews = []
 
-        function resetPage() {}
+        function resetPage() {
+          // Clear Shop Name
+          let shopNameElement = document.querySelector("input[name='shopName']");
+          shopNameElement.value = "";
 
-        function createReview() {}
+          // Clear Dish Name
+          let dishNameElement = document.querySelector("input[name='dishName']");
+          dishNameElement.value = "";
+
+          // Uncheck Price Point
+          let priceRadioElement = document.querySelector(".priceRadio:checked");
+          priceRadioElement.checked = false;
+
+          // Uncheck Type of Cuisine
+          let chosenCuisineElement = document.querySelectorAll("input[name='cuisine']:checked");
+          for(let i=0; i<chosenCuisineElement.length; i++) {
+            chosenCuisineElement[i].checked = false
+          }
+
+          // Clear Descriptive Review
+          let descReviewElement = document.querySelector("input[name='descReview']");
+          descReviewElement.value = "";
+        }
+
+        function displayReviews() {}
+
+        function createReview(shopName, dishName, price, cuisine, desc, rating) {
+          let newReview = {
+            id: globalId,
+            shopName,
+            dishName,
+            price,
+            cuisine,
+            desc,
+            rating,
+          }
+          globalId += 1
+          reviews.push(newReview);
+          displayReviews();
+        }
 
         function editReview() {}
 
@@ -257,6 +296,15 @@
             cuisineTooLittle == false
           ) {
             // Form is valid; create review and reset form
+            createReview(
+              shopName,
+              dishName,
+              chosenPrice,
+              chosenCuisine,
+              descReview,
+              chosenRating
+            );
+            resetPage();
           }
         })
       })
