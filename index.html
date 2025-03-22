@@ -14,6 +14,7 @@
       #formContainer {
         padding: 100px;
         background-color: #FFF8E1;
+        border: 1px solid black
       }
 
       .formRow {
@@ -32,6 +33,36 @@
         color: #5A3E2B;
         font-family: 'Poppins';
       }
+
+      h1 {
+        font-weight: 700;
+        font-size: 46px;
+        color: #5A3E2B;
+        font-family: 'Poppins';
+      }
+
+      .errorMessage {
+        color: red;
+        font-size: 16pt;
+        font-weight: 600;
+      }
+
+      .card-body {
+        font-family: 'Pacifico', cursive;
+      }
+
+      .card-title {
+        font-weight: 900;
+        font-size: x-large;
+      }
+
+      .container {
+        height: 80vh;
+        border: 1px solid black;
+        margin: 80px;
+        padding: 20px;
+        background-color: #F4E1D2;
+      }
     </style>
   </head>
   <body>
@@ -39,7 +70,7 @@
     <div id="formContainer">
       <ul id="errorList"></ul>
 
-      <!-- <input type="hidden" name="reviewId" /> -->
+      <input type="hidden" name="reviewId"/>
       <div class="formRow">
         <label class="form-title">The Tasty Chronicles</label>
       </div>
@@ -57,7 +88,7 @@
           <input
             type="radio"
             class="form-check-input priceRadio"
-            value="what-a-steal"
+            value="What a steal!"
             name="price"
           />
           <label class="form-check-label">What a steal! &#128518</label>
@@ -66,7 +97,7 @@
           <input
             type="radio"
             class="form-check-input priceRadio"
-            value="decent"
+            value="Decent"
             name="price"
           />
           <label class="form-check-label">Decent &#128524</label>
@@ -75,7 +106,7 @@
           <input
             type="radio"
             class="form-check-input priceRadio"
-            value="kinda-pricey"
+            value="Kinda Pricey"
             name="price"
           />
           <label class="form-check-label">Kinda Pricey &#128176</label>
@@ -84,7 +115,7 @@
           <input
             type="radio"
             class="form-check-input priceRadio"
-            value="im-feeling-rich"
+            value="I'm Feeling Rich"
             name="price"
           />
           <label class="form-check-label">I'm Feeling Rich &#128184</label>
@@ -97,7 +128,7 @@
             class="form-check-input"
             type="checkbox"
             name="cuisine"
-            value="asian"
+            value="Asian"
           />
           <label class="form-check-label">Asian</label>
         </div>
@@ -106,7 +137,7 @@
             class="form-check-input"
             type="checkbox"
             name="cuisine"
-            value="european"
+            value="European"
           />
           <label class="form-check-label">European</label>
         </div>
@@ -115,7 +146,7 @@
             class="form-check-input"
             type="checkbox"
             name="cuisine"
-            value="middle-eastern"
+            value="Middle Eastern"
           />
           <label class="form-check-label">Middle Eastern</label>
         </div>
@@ -124,7 +155,7 @@
             class="form-check-input"
             type="checkbox"
             name="cuisine"
-            value="american"
+            value="American"
           />
           <label class="form-check-label">American</label>
         </div>
@@ -133,7 +164,7 @@
             class="form-check-input"
             type="checkbox"
             name="cuisine"
-            value="others"
+            value="Others"
           />
           <label class="form-check-label">Others</label>
         </div>
@@ -155,10 +186,10 @@
       <button type="button" id="submitButton" class="btn btn-primary">
         Submit Review
       </button>
-      <!-- <div class="container">
-        <h1 class="mb-3">Saved Reviews</h1>
-        <div class="row" id="reviewList"></div>
-      </div> -->
+    <div class="container mx-0">
+      <h1 class="reviewTitle mt-4">My Saved Reviews</h1>
+      <div class="row" id="reviewList"></div>
+    </div>
     </div>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -166,11 +197,58 @@
       crossorigin="anonymous"
     ></script>
     <script>
+      let JSONBIN_ACCESS_KEY = "$2a$10$Pl7UVHmQhN8TO9l1EIWSf.aLS9WlkfMHWmSqhvmDtvGf9DJybyLUe";
+
       window.addEventListener("load", function() {
         let globalId = 0
         let reviews = []
 
+        const JSONBIN_ROOT_URL = "https://api.jsonbin.io/v3"
+        const BIN_ID = "67dd7c4f8a456b79667a1551"
+
+        function GET_SPECIFIC_BIN(binId) {
+          return JSONBIN_ROOT_URL + "/b/" + binId
+        }
+
+        function updateGlobalId() {
+          for(let i=0; i<reviews.length; i++) {
+            let currentId = reviews[i].id
+            if(currentId >= globalId) {
+              globalId = currentId + 1
+            }
+          }
+        }
+
+        async function importFromJSONBIN() {
+          let dataFromJSONBIN = await fetch(GET_SPECIFIC_BIN(BIN_ID));
+          console.log(dataFromJSONBIN)
+          dataFromJSONBIN = await dataFromJSONBIN.json();
+          reviewsFromJSONBIN = dataFromJSONBIN.record.reviews;
+          reviews = reviewsFromJSONBIN;
+          updateGlobalId();
+          displayReviews();
+        }
+
+        async function exportToJSONBIN() {
+          let dataFromJSONBIN = await fetch(GET_SPECIFIC_BIN(BIN_ID), {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Access-Key': JSONBIN_ACCESS_KEY
+            },
+            body: JSON.stringify({
+              reviews: reviews,
+            })
+          });
+        }
+
+        importFromJSONBIN();
+
         function resetPage() {
+          // Clear Review Id
+          let reviewIdInput = document.querySelector("input[name='reviewId']")
+          reviewIdInput.value = ""
+
           // Clear Shop Name
           let shopNameElement = document.querySelector("input[name='shopName']");
           shopNameElement.value = "";
@@ -193,10 +271,73 @@
           let descReviewElement = document.querySelector("input[name='descReview']");
           descReviewElement.value = "";
         }
+        
+        function makeReviewCard(id, shopName, dishName, price, cuisine, desc, rating) {
+          // creating a review card
+          let cuisineList = "<ul>";
+            for(let j=0; j<cuisine.length; j++) {
+              cuisineList += `<li>${cuisine[j]}</li>`
+            }
+          cuisineList += "</ul>"
+          return `<div class="col-3">
+                <div class="card">
+                <img src="https://picsum.photos/${200 + id}" class="card-img-top" alt="..." />
+                <div class="card-body" id="trip-${id}">
+                    <h5 class="card-title">${shopName}</h5>
+                    <h6 class="card-title">${dishName}</h6>
+                    <p class="card-text">Price Point: ${price}</p>
+                    <p class="card-text">Desciption: ${desc}</p>
+                    <p class="card-text">Rating: ${rating}</p>
+                    Cuisine:${cuisineList}
+                    <button type="button" class="btn btn-warning editReviewButton" id="editReviewButton-${id}">
+                      Edit
+                    </button>
+                    <button type="button" class="btn btn-danger deleteReviewButton" id="deleteReviewButton-${id}">
+                      Delete
+                    </button>
+                </div>
+            </div>`;
+        }
 
-        function displayReviews() {}
+        function displayReviews() {
+          // display the reviews in cards
+          document.getElementById("reviewList").innerHTML = ""
+          for(let i=0; i<reviews.length; i++) {
+            let currentReview = reviews[i]
+
+            let newReviewCard = makeReviewCard(
+              currentReview.id,
+              currentReview.shopName,
+              currentReview.dishName,
+              currentReview.price,
+              currentReview.cuisine,
+              currentReview.desc,
+              currentReview.rating
+            )
+
+            let reviewList = document.getElementById("reviewList");
+            let newReviewList = reviewList.innerHTML + newReviewCard;
+            reviewList.innerHTML = newReviewList;
+
+            let editReview =  document.getElementsByClassName("editReviewButton")
+            for(let l=0; l<editReview.length; l++) {
+              editReview[l].addEventListener("click", function() {
+                let chosenId = this.id.split("-")[1];
+                editCurrentReview(chosenId);        
+              })
+            }
+            let deleteReviews = document.getElementsByClassName("deleteReviewButton")
+            for(let k=0; k<deleteReviews.length; k++) {
+              deleteReviews[k].addEventListener("click", function() {
+                let chosenId = this.id.split("-")[1];
+                deleteReview(chosenId);
+              })
+            }
+          }
+        }
 
         function createReview(shopName, dishName, price, cuisine, desc, rating) {
+          // create a newReview object
           let newReview = {
             id: globalId,
             shopName,
@@ -208,10 +349,59 @@
           }
           globalId += 1
           reviews.push(newReview);
+          exportToJSONBIN();
           displayReviews();
         }
 
+        function editCurrentReview(inputId) {
+          let idx = reviews.findIndex((review) => review.id == inputId);
+          if(idx == -1) {
+            return undefined
+          } else {
+            let chosenReview = reviews[idx]
+
+            // Set id in the form
+            document.querySelector("input[name='reviewId']").value = chosenReview.id
+
+            // Set shop name in the form
+            document.querySelector("input[name='shopName']").value = chosenReview.shopName
+
+            // Set shop name in the form
+            document.querySelector("input[name='dishName']").value = chosenReview.dishName
+
+            // Set price in the form
+            let priceRadioElements = document.querySelectorAll(".priceRadio")
+            for(let i=0; i<priceRadioElements.length; i++) {
+              let currentPriceRadio = priceRadioElements[i].value
+              if(currentPriceRadio == chosenReview.price) {
+                priceRadioElements[i].checked = true
+              } else {
+                priceRadioElements[i].checked = false
+              }
+            }
+
+            // Set cuisine in the form
+            let cuisineCheckboxes = document.querySelectorAll("input[name='cuisine']")
+            for(let i=0; i<cuisineCheckboxes.length; i++) {
+              let currentCheckbox = cuisineCheckboxes[i]
+              if(chosenReview.cuisine.includes(currentCheckbox.value)) {
+                // use "includes" cos it is an array
+                currentCheckbox.checked = true
+              } else {
+                currentCheckbox.checked = false
+              }
+            }
+
+            // Set description in the form
+            document.querySelector("input[name='descReview']").value = chosenReview.desc
+
+            // Set rating in the form
+            document.getElementById("ratingSelect").value = chosenReview.rating
+          }
+        }
+
         function editReview(inputId, inputShopName, inputDishName, inputPrice, inputCuisine, inputDesc, inputRating) {
+          // edit the review based on its id with the given parameters
           let idx = reviews.findIndex((review) => review.id == inputId);
           if(idx == -1) {
             return null
@@ -222,20 +412,24 @@
             reviews[idx].cuisine = inputCuisine
             reviews[idx].desc = inputDesc
             reviews[idx].rating = inputRating
+            exportToJSONBIN();
           }
           displayReviews();
         }
 
         function deleteReview(inputId) {
+          // delete a review based on its id
           let idx = reviews.findIndex((review) => review.id == inputId);
           if(idx == -1) {
             return null
           } else {
             reviews.splice(idx, 1)
+            exportToJSONBIN();
           }
           displayReviews();
         }
 
+        displayReviews();
         let button = document.getElementById("submitButton")
         button.addEventListener("click", function() {
           // Criteria
@@ -254,6 +448,9 @@
           errorList.innerHTML = "";
 
           // Drawing out the .values and changing the flags (where necessary)
+          let reviewIdInput = document.querySelector("input[name='reviewId']")
+          let reviewId = reviewIdInput.value
+
           let shopNameElement = document.querySelector("input[name='shopName']");
           let shopName = shopNameElement.value;
           if (shopName == "") {
@@ -316,17 +513,31 @@
             priceIsEmpty == false &&
             cuisineTooLittle == false
           ) {
-            // Form is valid; create review and reset form
-            createReview(
-              shopName,
-              dishName,
-              chosenPrice,
-              chosenCuisine,
-              descReview,
-              chosenRating
-            );
-            resetPage();
-          }
+            // Form is valid
+            if(reviewId != "") {
+              // Update if reviewId exists
+              editReview(
+                reviewId,
+                shopName,
+                dishName,
+                chosenPrice,
+                chosenCuisine,
+                descReview,
+                chosenRating
+              )
+              resetPage();
+            } else {
+              // Create review and reset form
+              createReview(
+                shopName,
+                dishName,
+                chosenPrice,
+                chosenCuisine,
+                descReview,
+                chosenRating
+              );
+              resetPage();
+          }}
         })
       })
     </script>
